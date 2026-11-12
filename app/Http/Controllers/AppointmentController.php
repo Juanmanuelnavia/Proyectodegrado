@@ -55,10 +55,52 @@ class AppointmentController extends Controller
             'notes'        => 'nullable|string',
         ]);
 
+        if ($error = $this->scheduleConflict($request->user_id, $request->scheduled_at)) {
+            return back()->withInput()->withErrors(['scheduled_at' => $error]);
+        }
+
         Appointment::create($request->all());
 
         return redirect()->route('appointments.index')
             ->with('success', 'Cita agendada exitosamente.');
+    }
+
+    /**
+     * Duración que se reserva para cada consulta (en minutos).
+     * Dos citas del mismo veterinario no pueden quedar a menos de este tiempo.
+     */
+    private const SLOT_MINUTES = 30;
+
+    /**
+     * Devuelve un mensaje de error si el veterinario ya tiene otra cita activa
+     * (no cancelada) dentro de la ventana de la consulta; si no, devuelve null.
+     */
+    private function scheduleConflict($vetId, $scheduledAt, $ignoreId = null): ?string
+    {
+        $start = \Carbon\Carbon::parse($scheduledAt);
+
+        $conflict = Appointment::with('pet')
+            ->where('user_id', $vetId)
+            ->where('status', '!=', 'cancelada')
+            ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
+            ->where('scheduled_at', '>', $start->copy()->subMinutes(self::SLOT_MINUTES))
+            ->where('scheduled_at', '<', $start->copy()->addMinutes(self::SLOT_MINUTES))
+            ->orderBy('scheduled_at')
+            ->first();
+
+        if (! $conflict) {
+            return null;
+        }
+
+        $vet = User::find($vetId);
+
+        return sprintf(
+            '%s ya tiene una cita a las %s (%s). Cada consulta ocupa %d minutos; elige otra hora u otro veterinario.',
+            $vet?->name ?? 'El veterinario',
+            \Carbon\Carbon::parse($conflict->scheduled_at)->format('h:i A'),
+            $conflict->pet?->name ?? 'otra mascota',
+            self::SLOT_MINUTES
+        );
     }
 
     public function show(Appointment $appointment)
@@ -86,6 +128,12 @@ class AppointmentController extends Controller
             'reason'       => 'nullable|string|max:255',
             'notes'        => 'nullable|string',
         ]);
+
+        // Una cita cancelada libera el horario, así que solo se valida si sigue activa.
+        if ($request->status !== 'cancelada'
+            && $error = $this->scheduleConflict($request->user_id, $request->scheduled_at, $appointment->id)) {
+            return back()->withInput()->withErrors(['scheduled_at' => $error]);
+        }
 
         $appointment->update($request->all());
 
