@@ -20,10 +20,12 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
+                @if(auth()->user()->role === 'admin' || auth()->user()->role === 'veterinario')
                 <a href="{{ route('medical-records.edit', $medicalRecord) }}"
                    class="bg-yellow-50 text-yellow-600 hover:bg-yellow-100 px-4 py-2 rounded-xl text-sm font-medium transition">
                     <i class="fa-solid fa-pen mr-1"></i> Editar
                 </a>
+                @endif
                 <a href="{{ route('medical-records.pdf', $medicalRecord) }}"
                    class="bg-red-50 text-red-600 hover:bg-red-100 px-4 py-2 rounded-xl text-sm font-medium transition">
                     <i class="fa-solid fa-file-pdf mr-1"></i> Historia PDF

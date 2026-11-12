@@ -23,10 +23,12 @@
            class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm">
             <i class="fa-solid fa-plus text-purple-600"></i> Nueva cita
         </a>
+        @if(auth()->user()->role === 'admin' || auth()->user()->role === 'veterinario')
         <a href="{{ route('medical-records.create') }}"
            class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm">
             <i class="fa-solid fa-file-medical text-purple-600"></i> Nueva historia
         </a>
+        @endif
         <a href="{{ route('invoices.create') }}"
            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm">
             <i class="fa-solid fa-file-invoice-dollar"></i> Nueva factura

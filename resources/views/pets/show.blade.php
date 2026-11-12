@@ -86,10 +86,12 @@
             <h3 class="text-lg font-semibold text-gray-800">
                 <i class="fa-solid fa-file-medical text-purple-600 mr-2"></i>Historias clínicas
             </h3>
+            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'veterinario')
             <a href="{{ route('medical-records.create', ['pet_id' => $pet->id]) }}"
                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition">
                 <i class="fa-solid fa-plus mr-1"></i> Nueva historia
             </a>
+            @endif
         </div>
 
         @forelse($pet->medicalRecords->sortByDesc('visit_date') as $record)
