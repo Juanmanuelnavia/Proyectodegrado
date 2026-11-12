@@ -7,6 +7,7 @@ use App\Models\Pet;
 use App\Models\Owner;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class AppointmentController extends Controller
 {
@@ -47,13 +48,14 @@ class AppointmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'pet_id'       => 'required|exists:pets,id',
+            // La mascota debe existir y pertenecer al propietario elegido.
+            'pet_id'       => ['required', Rule::exists('pets', 'id')->where('owner_id', $request->owner_id)],
             'owner_id'     => 'required|exists:owners,id',
             'user_id'      => 'required|exists:users,id',
             'scheduled_at' => 'required|date',
             'reason'       => 'nullable|string|max:255',
             'notes'        => 'nullable|string',
-        ]);
+        ], self::MESSAGES);
 
         if ($error = $this->scheduleConflict($request->user_id, $request->scheduled_at)) {
             return back()->withInput()->withErrors(['scheduled_at' => $error]);
@@ -70,6 +72,11 @@ class AppointmentController extends Controller
      * Dos citas del mismo veterinario no pueden quedar a menos de este tiempo.
      */
     private const SLOT_MINUTES = 30;
+
+    /** Mensajes de validación en español para los campos de la cita. */
+    private const MESSAGES = [
+        'pet_id.exists' => 'La mascota seleccionada no existe o no pertenece al propietario elegido.',
+    ];
 
     /**
      * Devuelve un mensaje de error si el veterinario ya tiene otra cita activa
@@ -120,14 +127,15 @@ class AppointmentController extends Controller
     public function update(Request $request, Appointment $appointment)
     {
         $request->validate([
-            'pet_id'       => 'required|exists:pets,id',
+            // La mascota debe existir y pertenecer al propietario elegido.
+            'pet_id'       => ['required', Rule::exists('pets', 'id')->where('owner_id', $request->owner_id)],
             'owner_id'     => 'required|exists:owners,id',
             'user_id'      => 'required|exists:users,id',
             'scheduled_at' => 'required|date',
             'status'       => 'required|in:pendiente,confirmada,completada,cancelada',
             'reason'       => 'nullable|string|max:255',
             'notes'        => 'nullable|string',
-        ]);
+        ], self::MESSAGES);
 
         // Una cita cancelada libera el horario, así que solo se valida si sigue activa.
         if ($request->status !== 'cancelada'
