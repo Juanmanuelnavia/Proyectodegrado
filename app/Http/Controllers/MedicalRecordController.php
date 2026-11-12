@@ -59,6 +59,16 @@ class MedicalRecordController extends Controller
             'medication'  => 'nullable|string|max:255',
             'dosage'      => 'nullable|string|max:255',
             'next_visit'  => 'nullable|date',
+            // Vacunación y desparasitación: las fechas son la fecha de la PRÓXIMA dosis
+            // (las alertas del sistema avisan cuando faltan 7 días o ya pasó).
+            'vaccine_name'   => 'nullable|string|max:255|required_with:vaccine_date',
+            'vaccine_date'   => 'nullable|date|after_or_equal:visit_date|required_with:vaccine_name',
+            'deworming_date' => 'nullable|date|after_or_equal:visit_date',
+        ], [
+            'vaccine_name.required_with'     => 'Indica el nombre de la vacuna aplicada.',
+            'vaccine_date.required_with'     => 'Indica la fecha de la próxima dosis de la vacuna.',
+            'vaccine_date.after_or_equal'    => 'La fecha de la próxima dosis no puede ser anterior a la fecha de la visita.',
+            'deworming_date.after_or_equal'  => 'La fecha de la próxima desparasitación no puede ser anterior a la fecha de la visita.',
         ]);
 
         $record = MedicalRecord::create([
@@ -72,13 +82,27 @@ class MedicalRecordController extends Controller
             'observations' => $request->observations,
         ]);
 
-        if ($request->condition) {
+        $hasVaccine    = filled($request->vaccine_name);
+        $hasDeworming  = filled($request->deworming_date);
+
+        if ($request->condition || $hasVaccine || $hasDeworming) {
+            // La columna "condition" es obligatoria: si es una visita solo de
+            // vacunación o desparasitación se genera un texto descriptivo.
+            $condition = $request->condition ?: match (true) {
+                $hasVaccine && $hasDeworming => 'Vacunación y desparasitación',
+                $hasVaccine                  => 'Vacunación: ' . $request->vaccine_name,
+                default                      => 'Desparasitación',
+            };
+
             Diagnosis::create([
                 'medical_record_id' => $record->id,
-                'condition'         => $request->condition,
+                'condition'         => $condition,
                 'medication'        => $request->medication,
                 'dosage'            => $request->dosage,
                 'next_visit'        => $request->next_visit,
+                'vaccine_name'      => $hasVaccine ? $request->vaccine_name : null,
+                'vaccine_date'      => $hasVaccine ? $request->vaccine_date : null,
+                'deworming_date'    => $request->deworming_date,
             ]);
         }
 

@@ -134,6 +134,38 @@
                 </div>
             </div>
 
+            {{-- Vacunación y desparasitación --}}
+            <div>
+                <h3 class="text-base font-semibold text-gray-800 mb-1 pb-2 border-b border-gray-100">
+                    <i class="fa-solid fa-syringe text-purple-600 mr-2"></i>Vacunación y desparasitación
+                </h3>
+                <p class="text-xs text-gray-400 mb-4">
+                    Opcional. Registra la fecha de la <strong>próxima</strong> dosis: el sistema avisará
+                    7 días antes y cuando ya haya pasado.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Vacuna aplicada</label>
+                        <input type="text" name="vaccine_name" value="{{ old('vaccine_name') }}"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="Ej: Triple felina, Antirrábica">
+                        @error('vaccine_name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Próxima dosis de la vacuna</label>
+                        <input type="date" name="vaccine_date" value="{{ old('vaccine_date') }}"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        @error('vaccine_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Próxima desparasitación</label>
+                        <input type="date" name="deworming_date" value="{{ old('deworming_date') }}"
+                            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        @error('deworming_date')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    </div>
+                </div>
+            </div>
+
             <div class="flex gap-3 pt-2">
                 <button type="submit"
                     class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-xl text-sm font-medium transition">

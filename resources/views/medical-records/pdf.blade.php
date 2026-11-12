@@ -168,6 +168,23 @@
                         <div class="info-value">{{ $diagnosis->next_visit ? \Carbon\Carbon::parse($diagnosis->next_visit)->format('d/m/Y') : '—' }}</div>
                     </td>
                 </tr>
+                @if($diagnosis->vaccine_name || $diagnosis->deworming_date)
+                <tr>
+                    <td>
+                        <div class="info-label">Vacuna aplicada</div>
+                        <div class="info-value">
+                            {{ $diagnosis->vaccine_name ?? '—' }}
+                            @if($diagnosis->vaccine_date)
+                            (próxima dosis: {{ \Carbon\Carbon::parse($diagnosis->vaccine_date)->format('d/m/Y') }})
+                            @endif
+                        </div>
+                    </td>
+                    <td>
+                        <div class="info-label">Próxima desparasitación</div>
+                        <div class="info-value">{{ $diagnosis->deworming_date ? \Carbon\Carbon::parse($diagnosis->deworming_date)->format('d/m/Y') : '—' }}</div>
+                    </td>
+                </tr>
+                @endif
             </table>
         </div>
         @endforeach

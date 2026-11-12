@@ -104,6 +104,26 @@
                     </p>
                 </div>
             </div>
+            @if($diagnosis->vaccine_name || $diagnosis->deworming_date)
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-100">
+                <div>
+                    <p class="text-xs text-gray-400 mb-1">Vacuna aplicada</p>
+                    <p class="text-sm font-medium text-gray-800">{{ $diagnosis->vaccine_name ?? '—' }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 mb-1">Próxima dosis</p>
+                    <p class="text-sm text-gray-800">
+                        {{ $diagnosis->vaccine_date ? \Carbon\Carbon::parse($diagnosis->vaccine_date)->format('d/m/Y') : '—' }}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 mb-1">Próxima desparasitación</p>
+                    <p class="text-sm text-gray-800">
+                        {{ $diagnosis->deworming_date ? \Carbon\Carbon::parse($diagnosis->deworming_date)->format('d/m/Y') : '—' }}
+                    </p>
+                </div>
+            </div>
+            @endif
         </div>
         @empty
         <p class="text-gray-400 text-sm text-center py-6">No hay diagnósticos registrados</p>
